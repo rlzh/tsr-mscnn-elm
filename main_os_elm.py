@@ -1,7 +1,6 @@
 import os
 import helpers
 import sys
-import arch
 import pickle
 import tensorflow as tf
 import cv2
@@ -54,8 +53,10 @@ def main():
 
         t_train = to_categorical(t_train, num_classes=n_classes)
         t_test = to_categorical(t_test, num_classes=n_classes)
+        t_valid = to_categorical(t_valid, num_classes=n_classes)
         t_train = t_train.astype(np.float32)
         t_test = t_test.astype(np.float32)
+        t_valid = t_valid.astype(np.float32)
 
         n_input_nodes = image_shape[0]
         n_hidden_nodes = 1024
@@ -80,7 +81,7 @@ def main():
             activation='sigmoid',
         )
 
-        BATCH_SIZE = 128
+        BATCH_SIZE = 64
         border = int(1.5 * n_hidden_nodes)
         x_train_init = X_train[:border]
         x_train_seq = X_train[border:]
@@ -89,16 +90,16 @@ def main():
 
         pbar = tqdm.tqdm(total=len(X_train), desc='initial training phase')
         os_elm.init_train(x_train_init, t_train_init)
+        pbar.update(n=len(x_train_init))
+        pbar.set_description('sequential training phase')
+        for i in range(0, len(x_train_seq), BATCH_SIZE):
+            x_batch = x_train_seq[i:i+BATCH_SIZE]
+            t_batch = t_train_seq[i:i+BATCH_SIZE]
+            os_elm.seq_train(x_batch, t_batch)
+            pbar.update(n=len(x_batch))
+        pbar.close()
 
-        # pbar.set_description('sequential training phase')
-        # for i in range(0, len(x_train_seq), BATCH_SIZE):
-        #     x_batch = x_train_seq[i:i+BATCH_SIZE]
-        #     t_batch = t_train_seq[i:i+BATCH_SIZE]
-        #     os_elm.seq_train(x_batch, t_batch)
-        #     pbar.update(n=len(x_batch))
-        # pbar.close()
-
-        # # sample 10 validation samples from x_test
+        # sample 10 validation samples from x_test
         # n = 10  # n_validation
         # x = X_valid[:n]
         # t = t_valid[:n]
@@ -111,6 +112,11 @@ def main():
         #     print('estimated answer: class %d' % max_ind)
         #     print('estimated probability: %.3f' % y[i, max_ind])
         #     print('true answer: class %d' % np.argmax(t[i]))
+
+        X_valid, t_valid = skl.utils.shuffle(X_valid, t_valid)
+        [accuracy] = os_elm.evaluate(
+            X_valid, t_valid, metrics=['accuracy'])
+        print('val_accuracy: %f' % (accuracy))
 
 
 if __name__ == '__main__':

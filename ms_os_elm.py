@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import os
-import ms_os_elm_architecture
+import elm_architecture
 
 
 class MS_OS_ELM(object):
@@ -63,9 +63,10 @@ class MS_OS_ELM(object):
         )
 
         # Multi-Scale Arch
-        self.__logits, regularizers = ms_os_elm_architecture.MultiScaleCNNArch(
+        self.__logits, regularizers = elm_architecture.MultiScaleCNNArch(
             self.__x,
-            self.__dropout
+            self.__dropout,
+            128
         )
         # one_hot_y = tf.one_hot(self.__t, self.__n_output_nodes)
         # cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(

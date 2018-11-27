@@ -5,7 +5,7 @@ import tensorflow as tf
 import cv2
 
 
-def MultiScaleCNNArch(x, dropout):
+def MultiScaleCNNArch(x, dropout, feature_size):
     """
     My first attempt to implement multiscale CNNs by using the paper below.
     See "Traffic Sign Recognition with MultiScale Convolutional Neural Networks" by Sermanet, 2011.
@@ -13,9 +13,9 @@ def MultiScaleCNNArch(x, dropout):
     mu = 0
     sigma = 0.1
 
-    feature_size1 = 64
-    feature_size2 = 32
-    feature_size3 = 16
+    feature_size1 = feature_size
+    feature_size2 = (int)(feature_size * 0.5)
+    feature_size3 = (int)(feature_size * 0.25)
     # **** Layer 1 ****
     # Convolutional. Input = 32x32x1. Output = 28x28xfeature_size1.
     conv1_W = tf.Variable(
@@ -73,7 +73,7 @@ def MultiScaleCNNArch(x, dropout):
     # From Layer 1: Input = 14x14x32. Output = 1x6272.
     conv1_flat = tf.contrib.layers.flatten(conv1)
     # Combine from Layer 1 and from Layer 2. Output = 1x7360
-    concat = tf.concat([conv32_active_flat, conv2_flat, conv1_flat], 1)
+    concat = tf.concat([conv2_flat, conv1_flat], 1)
     regularizers = (
         tf.nn.l2_loss(conv1_W) + tf.nn.l2_loss(conv2_W) +
         tf.nn.l2_loss(conv32_W)

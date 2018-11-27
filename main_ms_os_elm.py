@@ -64,7 +64,7 @@ def main():
 
         LOSS_FUNCS = [
             'mean_squared_error',  'mean_absolute_error',
-            'categorical_crossentropy', 'binary_crossentropy'
+            'categorical_crossentropy',  'binary_crossentropy'
         ]
         highest_accuracy = 0
         optimal = ()
@@ -113,7 +113,6 @@ def main():
                     pbar.update(n=len(x_batch))
                 pbar.close()
 
-                # sample 10 validation samples from x_test
                 X_valid, t_valid = skl.utils.shuffle(X_valid, t_valid)
                 [accuracy] = os_elm.evaluate(
                     X_valid, t_valid, metrics=['accuracy'])

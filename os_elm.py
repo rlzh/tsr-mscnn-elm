@@ -6,8 +6,9 @@ import os
 
 class OS_ELM(object):
 
-    def __init__(self, n_input_nodes, n_hidden_nodes, n_output_nodes,
-                 activation='sigmoid', loss='mean_squared_error', name=None):
+    def __init__(
+            self, n_input_nodes, n_hidden_nodes, n_output_nodes,
+            activation='sigmoid', loss='mean_squared_error', name=None):
 
         if name == None:
             self.name = 'model'
@@ -15,7 +16,7 @@ class OS_ELM(object):
             self.name = name
 
         self.__sess = tf.Session()
-        self.__n_input_nodes = n_input_nodes * n_input_nodes
+        self.__n_input_nodes = n_input_nodes
         self.__n_hidden_nodes = n_hidden_nodes
         self.__n_output_nodes = n_output_nodes
 
@@ -51,7 +52,7 @@ class OS_ELM(object):
             initializer=tf.constant_initializer(False),
         )
         self.__x = tf.placeholder(tf.float32, shape=(
-            None, self.n_input_nodes), name='x')
+            None, self.__n_input_nodes), name='x')
         self.__t = tf.placeholder(tf.float32, shape=(
             None, self.__n_output_nodes), name='t')
         self.__alpha = tf.get_variable(
@@ -107,7 +108,6 @@ class OS_ELM(object):
         self.__sess.run(tf.global_variables_initializer())
 
     def predict(self, x):
-        x = np.reshape(x, (x.shape[0], self.__n_input_nodes))
         return self.__sess.run(self.__predict, feed_dict={self.__x: x})
 
     def evaluate(self, x, t, metrics=['loss']):
@@ -121,7 +121,6 @@ class OS_ELM(object):
                 return ValueError(
                     'an unknown metric \'%s\' was given.' % m
                 )
-        x = np.reshape(x, (x.shape[0], self.__n_input_nodes))
         ret = self.__sess.run(met, feed_dict={self.__x: x, self.__t: t})
         return ret
 
@@ -138,7 +137,7 @@ class OS_ELM(object):
                 'But this time len(x) = %d, while n_hidden_nodes = %d' % (
                     len(x), self.__n_hidden_nodes)
             )
-        x = np.reshape(x, (x.shape[0], self.__n_input_nodes))
+
         self.__sess.run(self.__init_train, feed_dict={
                         self.__x: x, self.__t: t})
         self.__sess.run(self.__finish_init_train)
@@ -150,7 +149,6 @@ class OS_ELM(object):
                 'please first initialize the model\'s weights by \'init_train\' '
                 'method before calling \'seq_train\' method.'
             )
-        x = np.reshape(x, (x.shape[0], self.__n_input_nodes))
         self.__sess.run(self.__seq_train, feed_dict={self.__x: x, self.__t: t})
 
     def __build_init_train_graph(self):
@@ -212,7 +210,3 @@ class OS_ELM(object):
     @property
     def n_output_nodes(self):
         return self.__n_output_nodes
-
-    @property
-    def t_predict(self):
-        return self.__predict

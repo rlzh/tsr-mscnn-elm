@@ -35,7 +35,9 @@ def main():
         with open(testing_file, mode='rb') as f:
             test = pickle.load(f)
         X_train, t_train = train['features'], train['labels']
+
         X_valid, t_valid = valid['features'], valid['labels']
+
         X_test, t_test = test['features'], test['labels']
 
         n_train = X_train.shape[0]
@@ -51,6 +53,18 @@ def main():
         print("min y_valid = ", min(t_valid))
         print("Number of classes =", n_classes)
 
+        X_train = np.reshape(
+            X_train,
+            (X_train.shape[0], X_train.shape[1] * X_train.shape[1])
+        )
+        X_valid = np.reshape(
+            X_valid,
+            (X_valid.shape[0], X_valid.shape[1] * X_valid.shape[1])
+        )
+        X_test = np.reshape(
+            X_test,
+            (X_test.shape[0], X_test.shape[1] * X_test.shape[1])
+        )
         t_train = to_categorical(t_train, num_classes=n_classes)
         t_test = to_categorical(t_test, num_classes=n_classes)
         t_valid = to_categorical(t_valid, num_classes=n_classes)
@@ -64,7 +78,7 @@ def main():
 
         os_elm = OS_ELM(
             # the number of input nodes.
-            n_input_nodes=n_input_nodes,
+            n_input_nodes=n_input_nodes*n_input_nodes,
             # the number of hidden nodes.
             n_hidden_nodes=n_hidden_nodes,
             # the number of output nodes.
@@ -91,6 +105,7 @@ def main():
         pbar = tqdm.tqdm(total=len(X_train), desc='initial training phase')
         os_elm.init_train(x_train_init, t_train_init)
         pbar.update(n=len(x_train_init))
+
         pbar.set_description('sequential training phase')
         for i in range(0, len(x_train_seq), BATCH_SIZE):
             x_batch = x_train_seq[i:i+BATCH_SIZE]
@@ -98,20 +113,6 @@ def main():
             os_elm.seq_train(x_batch, t_batch)
             pbar.update(n=len(x_batch))
         pbar.close()
-
-        # sample 10 validation samples from x_test
-        # n = 10  # n_validation
-        # x = X_valid[:n]
-        # t = t_valid[:n]
-        # y = os_elm.predict(x)
-        # y = softmax(y)
-
-        # for i in range(n):
-        #     max_ind = np.argmax(y[i])
-        #     print('========== sample index %d ==========' % i)
-        #     print('estimated answer: class %d' % max_ind)
-        #     print('estimated probability: %.3f' % y[i, max_ind])
-        #     print('true answer: class %d' % np.argmax(t[i]))
 
         X_valid, t_valid = skl.utils.shuffle(X_valid, t_valid)
         [accuracy] = os_elm.evaluate(

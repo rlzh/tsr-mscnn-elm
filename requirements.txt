@@ -14,7 +14,7 @@ decorator==4.3.0
 defusedxml==0.5.0
 dnspython==1.15.0
 entrypoints==0.2.3
-eventlet==0.24.1
+eventlet==0.31.0
 ffmpeg==1.4
 Flask==1.0.2
 Flask-SocketIO==3.0.2
